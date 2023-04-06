@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Grabadora de Audio</title>
+  </head>
+  <body>
+    <div>
+      <button id="recordButton">Grabar</button>
+      <button id="stopButton" disabled>Detener</button>
+    </div>
+    <br>
+    <audio controls id="audio"></audio>
+
+    <script>
+      const recordButton = document.getElementById('recordButton');
+      const stopButton = document.getElementById('stopButton');
+      const audio = document.getElementById('audio');
+
+      let mediaRecorder;
+      let chunks = [];
+
+      recordButton.addEventListener('click', () => {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.addEventListener('dataavailable', event => {
+              chunks.push(event.data);
+            });
+
+            mediaRecorder.addEventListener('stop', () => {
+              const audioBlob = new Blob(chunks);
+              const audioUrl = URL.createObjectURL(audioBlob);
+
+              audio.src = audioUrl;
+            });
+
+            mediaRecorder.start();
+
+            recordButton.disabled = true;
+            stopButton.disabled = false;
+          })
+      });
+
+      stopButton.addEventListener('click', () => {
+        mediaRecorder.stop();
+
+        recordButton.disabled = false;
+        stopButton.disabled = true;
+
+        chunks = [];
+      });
+    </script>
+  </body>
+</html>
